@@ -1,4 +1,4 @@
-from flask import Flask, request, abort
+from flask import Flask, request, abort, render_template
 from uuid import uuid4
 import requests.auth
 import urllib.parse
@@ -56,7 +56,8 @@ def main():
         access_token = get_token(code)
         # Note: In most cases, you'll want to store the access token, in, say,
         # a session for use in other parts of your web app.
-        return "Your reddit username is: %s" % get_username(access_token)
+        #return "Your reddit username is: %s" % get_username(access_token)
+        return render_template('main.html', user=get_username(access_token))
     text = '<a href="%s">Authenticate with reddit</a>'
     return text % make_authorization_url()
 

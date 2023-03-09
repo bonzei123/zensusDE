@@ -9,8 +9,8 @@ app = Flask(__name__)
 
 CLIENT_ID = 'MOFG59uULfGTfEeNSNxlbA'
 CLIENT_SECRET = 'lhp6cBFRZs3AjDFlwDMB5FpM-uHZhw'
-#REDIRECT_URI = 'https://zensusde.onrender.com'
-REDIRECT_URI = 'http://127.0.0.1:5000/'
+REDIRECT_URI = 'https://zensusde.onrender.com'
+#REDIRECT_URI = 'http://127.0.0.1:5000/'
 
 
 def base_headers():
@@ -43,7 +43,7 @@ def is_valid_state(state):
 
 
 @app.route('/')
-def homepage():
+def main():
     error = request.args.get('error', '')
     if error:
         return "Error: " + error

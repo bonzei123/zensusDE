@@ -2,8 +2,6 @@ from flask import Flask, request, abort, render_template
 from uuid import uuid4
 import requests.auth
 import urllib.parse
-#from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user
-import praw
 
 app = Flask(__name__)
 

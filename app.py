@@ -4,11 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 from uuid import uuid4
 import requests.auth
 import urllib.parse
+import os
 
 
 app = Flask(__name__)
 hashing = Hashing(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://zensus_de:fg9wT11CO00sr6k0xbixbFiT5EipOhKT@dpg-cg501lfdvk4n2c1k14tg-a/zensus_de'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 db = SQLAlchemy(app)
 
 
@@ -16,11 +17,12 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     state = db.Column(db.String(60), nullable=False)
     hash = db.Column(db.String(64), nullable=False)
+    age = db.Column(db.DateTime, nullable=False)
 
 
-CLIENT_ID = 'MOFG59uULfGTfEeNSNxlbA'
-CLIENT_SECRET = 'lhp6cBFRZs3AjDFlwDMB5FpM-uHZhw'
-REDIRECT_URI = 'https://zensusde.onrender.com'
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')
 # REDIRECT_URI = 'http://127.0.0.1:5000/'
 
 

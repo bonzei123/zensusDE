@@ -107,8 +107,8 @@ def main():
             db.session.commit()
         msg = '<p>danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
         return render_template('main.html', msg=msg)
-    msg = '<a href="%s" class="btn btn-danger" role="button">Authentifiziere dich mit Reddit!</a>' % make_authorization_url()
-    return render_template('main.html', msg=msg)
+    link = make_authorization_url()
+    return render_template('main.html', link=link)
 
 
 def get_token(code):

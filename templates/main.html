@@ -7,8 +7,8 @@
             {% else %}
                 <p>Hallo Unbekannt!</p>
             {% endif %}
-            {% if link is defined %}
-                <a href="{{ link }}" class="btn btn-danger" role="button">Authentifiziere dich mit Reddit!</a>
+            {% if msg is defined %}
+                {{ msg|safe }}
             {% endif %}
             {% if form is defined %}
                 <form class="form" method="POST" action="/">

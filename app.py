@@ -21,9 +21,6 @@ app.config['CACHE_DIR'] = os.getenv('CACHE_DIR')
 hashing = Hashing(app)
 db = SQLAlchemy(app)
 cache = Cache(app)
-with app.app_context():
-    db.create_all()
-    db.session.commit()
 
 
 class Entry(db.Model):
@@ -33,6 +30,11 @@ class Entry(db.Model):
     hash = db.Column(db.String(), nullable=False)
     created = db.Column(db.DateTime)
     schuld = db.Column(db.String(), default='')
+
+
+with app.app_context():
+    db.create_all()
+    db.session.commit()
 
 
 def base_headers():

@@ -8,7 +8,7 @@ import urllib.parse
 
 app = Flask(__name__)
 hashing = Hashing(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://zensus_de:fg9wT11CO00sr6k0xbixbFiT5EipOhKT@dpg-cg501lfdvk4n2c1k14tg-a/zensus_de'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://zensus_de:fg9wT11CO00sr6k0xbixbFiT5EipOhKT@dpg-cg501lfdvk4n2c1k14tg-a/zensus_de'
 db = SQLAlchemy(app)
 
 

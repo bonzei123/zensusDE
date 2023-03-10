@@ -4,3 +4,4 @@ praw
 flask-hashing
 flask-sqlalchemy
 requests
+psycopg2-binary

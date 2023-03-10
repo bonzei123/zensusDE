@@ -2,6 +2,7 @@ from flask import Flask, request, abort, render_template
 from flask_hashing import Hashing
 from flask_sqlalchemy import SQLAlchemy
 from uuid import uuid4
+from forms import ZensusForm
 import requests.auth
 import urllib.parse
 import os
@@ -10,6 +11,7 @@ import os
 app = Flask(__name__)
 hashing = Hashing(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 db = SQLAlchemy(app)
 
 
@@ -18,6 +20,7 @@ class Entry(db.Model):
     state = db.Column(db.String(60), nullable=False)
     hash = db.Column(db.String(64), nullable=False)
     age = db.Column(db.DateTime, nullable=False)
+    schuld = db.Column(db.String(60), nullable=False)
 
 
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -70,9 +73,12 @@ def main():
         user_agent = request.headers.get('User-Agent')
         user_ip = request.remote_addr
         h = hashing.hash_value(user_agent, salt=user_ip)
+        form = ZensusForm()
+        if form.validate_on_submit():
+            return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.data
         # Note: In most cases, you'll want to store the access token, in, say,
         # a session for use in other parts of your web app.
-        return render_template('main.html', user=get_username(access_token))
+        return render_template('main.html', user=get_username(access_token), form=form)
     text = '<a href="%s">Authenticate with reddit</a>'
     return text % make_authorization_url()
 

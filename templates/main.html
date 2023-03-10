@@ -1,8 +1,18 @@
 {% extends "layout.html" %}
 {% block content %}
     <div class="card-body p-5 bg-white rounded">
-          <div class="table-responsive overflow-visible">
-            Hallo {{ user }}
-          </div>
+        <div class="table-responsive overflow-visible">
+            <p>Hallo {{ user }}</p>
+            <form method="POST" action="/">
+                {{ form.csrf_token }}
+                <p>
+                    {{ form.schuld.label }}
+                    {{ form.schuld(size=20) }}
+                </p>
+                <p>
+                    <input type="submit">
+                </p>
+            </form>
         </div>
+    </div>
 {% endblock content %}

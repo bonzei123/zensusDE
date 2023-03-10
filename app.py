@@ -6,6 +6,7 @@ from uuid import uuid4
 from forms import ZensusForm
 import requests.auth
 import urllib.parse
+import datetime
 import os
 
 
@@ -104,7 +105,7 @@ def main():
             db.session.add(Entry(state=cache.get('state'),
                                  name=cache.get('name'),
                                  hash=cache.get('h'),
-                                 created=cache.get('created'),
+                                 created=datetime.datetime.fromtimestamp(cache.get('created')),
                                  schuld=schuld))
             db.session.query()
             db.session.commit()

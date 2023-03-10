@@ -88,7 +88,7 @@ def main():
         # a session for use in other parts of your web app.
         return render_template('main.html', user=get_userdata(access_token)['name'], form=form)
     if form.validate_on_submit():
-        return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.data
+        return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.choices[int(form.schuld.data)][1]
     text = '<a href="%s">Authenticate with reddit</a>'
     return text % make_authorization_url()
 

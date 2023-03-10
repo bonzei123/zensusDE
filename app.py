@@ -12,7 +12,7 @@ import os
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['CACHE_TYPE'] = 'SimpleCache'
+app.config['CACHE_TYPE'] = 'FileSystemCache'
 app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 hashing = Hashing(app)
 db = SQLAlchemy(app)
@@ -21,11 +21,11 @@ cache = Cache(app)
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    state = db.Column(db.String(60), nullable=False)
-    username_hash = db.Column(db.String(64), nullable=False)
-    hash = db.Column(db.String(64), nullable=False)
-    age = db.Column(db.DateTime, nullable=False)
-    schuld = db.Column(db.String(60), nullable=False)
+    state = db.Column(db.String(), nullable=False)
+    name = db.Column(db.String(), default='')
+    hash = db.Column(db.String(), nullable=False)
+    created = db.Column(db.DateTime)
+    schuld = db.Column(db.String(), default='')
 
 
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -80,13 +80,36 @@ def main():
         access_token = get_token(code)
         user_agent = request.headers.get('User-Agent')
         user_ip = request.remote_addr
-        h = hashing.hash_value(user_agent, salt=user_ip)
+        name = get_userdata(access_token)['name']
+        cache.set('name', name)
+        created = get_userdata(access_token)['created']
+        cache.set('created', created)
+        h = hashing.hash_value(hashing.hash_value(user_agent), hashing.hash_value(user_ip))
+        cache.set('h', h)
+        chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
+        chk_n = db.session.query(Entry).filter(Entry.name == name).first()
+        if not chk_h and not chk_n:
+            msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
+            return render_template('main.html', msg=msg)
         # Note: In most cases, you'll want to store the access token, in, say,
         # a session for use in other parts of your web app.
-        return render_template('main.html', user=get_userdata(access_token)['name'], form=form)
+        msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
+        return render_template('main.html', name=name, form=form, msg=msg)
     if form.validate_on_submit():
-        return render_template('main.html', choice=form.schuld.choices[int(form.schuld.data)][1])
-    return render_template('main.html', link=make_authorization_url())
+        schuld = form.schuld.data
+        schuldtext = form.schuld.choices[int(form.schuld.data)][1]
+        with app.app_context():
+            db.session.add(Entry(state=cache.get('state'),
+                                 name=cache.get('name'),
+                                 hash=cache.get('h'),
+                                 created=cache.get('created'),
+                                 schuld=schuld))
+            db.session.query()
+            db.session.commit()
+        msg = '<p>danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
+        return render_template('main.html', msg=msg)
+    msg = '<a href="' + make_authorization_url() + '" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>'
+    return render_template('main.html', msg=msg)
 
 
 def get_token(code):
@@ -113,4 +136,7 @@ def get_userdata(access_token):
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        db.session.commit()
     app.run(debug=True, port=5000)

@@ -93,12 +93,10 @@ def main():
         chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
         chk_n = db.session.query(Entry).filter(Entry.name == name).first()
         if not chk_h and not chk_n:
-            msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
-            return render_template('main.html', msg=msg)
-        # Note: In most cases, you'll want to store the access token, in, say,
-        # a session for use in other parts of your web app.
-        msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
-        return render_template('main.html', name=name, form=form, msg=msg)
+            msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
+            return render_template('main.html', name=name, form=form, msg=msg)
+        msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
+        return render_template('main.html', msg=msg)
     if form.validate_on_submit():
         schuld = form.schuld.data
         schuldtext = form.schuld.choices[int(form.schuld.data)][1]

@@ -1,14 +1,27 @@
 from flask import Flask, request, abort, render_template
+from flask_hashing import Hashing
+from flask_sqlalchemy import SQLAlchemy
 from uuid import uuid4
 import requests.auth
 import urllib.parse
 
+
 app = Flask(__name__)
+hashing = Hashing(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://zensus_de:fg9wT11CO00sr6k0xbixbFiT5EipOhKT@dpg-cg501lfdvk4n2c1k14tg-a/zensus_de'
+db = SQLAlchemy(app)
+
+
+class Entry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    state = db.Column(db.String(60), nullable=False)
+    hash = db.Column(db.String(64), nullable=False)
+
 
 CLIENT_ID = 'MOFG59uULfGTfEeNSNxlbA'
 CLIENT_SECRET = 'lhp6cBFRZs3AjDFlwDMB5FpM-uHZhw'
 REDIRECT_URI = 'https://zensusde.onrender.com'
-#REDIRECT_URI = 'http://127.0.0.1:5000/'
+# REDIRECT_URI = 'http://127.0.0.1:5000/'
 
 
 def base_headers():
@@ -52,9 +65,11 @@ def main():
             abort(403)
         code = request.args.get('code')
         access_token = get_token(code)
+        user_agent = request.headers.get('User-Agent')
+        user_ip = request.remote_addr
+        h = hashing.hash_value(user_agent, salt=user_ip)
         # Note: In most cases, you'll want to store the access token, in, say,
         # a session for use in other parts of your web app.
-        #return "Your reddit username is: %s" % get_username(access_token)
         return render_template('main.html', user=get_username(access_token))
     text = '<a href="%s">Authenticate with reddit</a>'
     return text % make_authorization_url()
@@ -79,6 +94,7 @@ def get_username(access_token):
     headers.update({"Authorization": "bearer " + access_token})
     response = requests.get("https://oauth.reddit.com/api/v1/me", headers=headers)
     me_json = response.json()
+    print(me_json)
     return me_json['name']
 
 

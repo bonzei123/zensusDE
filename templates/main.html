@@ -2,16 +2,13 @@
 {% block content %}
     <div class="card-body p-5 bg-white rounded">
         <div class="table-responsive overflow-visible">
-            {% if user is defined %}
-                <p>Hallo {{ user }}</p>
+            {% if name is defined %}
+                <p>Hallo u/{{ name }}</p>
             {% else %}
                 <p>Hallo Unbekannt!</p>
-                {% if link is defined %}
-                    <a href="{{ link }}" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>
-                {% endif %}
             {% endif %}
-            {% if choice is defined %}
-                <p>danke schön! Gut zu wissen, dass {{ choice }} Schuld hat.</p>
+            {% if msg is defined %}
+                {{ msg }}
             {% endif %}
             {% if form is defined %}
                 <form class="form" method="POST" action="/">

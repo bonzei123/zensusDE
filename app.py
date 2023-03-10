@@ -58,7 +58,7 @@ def is_valid_state(state):
     return True
 
 
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def main():
     error = request.args.get('error', '')
     if error:

@@ -9,11 +9,14 @@ import urllib.parse
 import os
 
 
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['CACHE_TYPE'] = 'FileSystemCache'
-app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+app.config['CACHE_TYPE'] = os.getenv('CACHE_TYPE')
+app.config['CACHE_DEFAULT_TIMEOUT'] = os.getenv('CACHE_DEFAULT_TIMEOUT')
 hashing = Hashing(app)
 db = SQLAlchemy(app)
 cache = Cache(app)
@@ -26,11 +29,6 @@ class Entry(db.Model):
     hash = db.Column(db.String(), nullable=False)
     created = db.Column(db.DateTime)
     schuld = db.Column(db.String(), default='')
-
-
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = os.getenv('REDIRECT_URI')
 
 
 def base_headers():

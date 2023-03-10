@@ -2,17 +2,29 @@
 {% block content %}
     <div class="card-body p-5 bg-white rounded">
         <div class="table-responsive overflow-visible">
-            <p>Hallo {{ user }}</p>
-            <form class="form" method="POST" action="/">
-                {{ form.csrf_token }}
-                <p>
-                    {{ form.schuld.label }}
-                    {{ form.schuld }}
-                </p>
-                <p>
-                    <input type="submit" class="btn btn-primary">
-                </p>
-            </form>
+            {% if user is defined %}
+                <p>Hallo {{ user }}</p>
+            {% else %}
+                <p>Hallo Unbekannt!</p>
+                {% if link is defined %}
+                    <a href="{{ link }}" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>
+                {% endif %}
+            {% endif %}
+            {% if choice is defined %}
+                <p>danke schön! Gut zu wissen, dass {{ choice }} Schuld hat.</p>
+            {% endif %}
+            {% if form is defined %}
+                <form class="form" method="POST" action="/">
+                    {{ form.csrf_token }}
+                    <p>
+                        {{ form.schuld.label }}
+                        {{ form.schuld }}
+                    </p>
+                    <p>
+                        <input type="submit" class="btn btn-primary">
+                    </p>
+                </form>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

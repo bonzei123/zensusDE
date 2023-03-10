@@ -81,16 +81,12 @@ def main():
         user_agent = request.headers.get('User-Agent')
         user_ip = request.remote_addr
         h = hashing.hash_value(user_agent, salt=user_ip)
-        form = ZensusForm()
-        if form.validate_on_submit():
-            return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.data
         # Note: In most cases, you'll want to store the access token, in, say,
         # a session for use in other parts of your web app.
         return render_template('main.html', user=get_userdata(access_token)['name'], form=form)
     if form.validate_on_submit():
-        return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.choices[int(form.schuld.data)][1]
-    text = '<a href="%s">Authenticate with reddit</a>'
-    return text % make_authorization_url()
+        return render_template('main.html', choice=form.schuld.choices[int(form.schuld.data)][1])
+    return render_template('main.html', link=make_authorization_url())
 
 
 def get_token(code):

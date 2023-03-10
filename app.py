@@ -1,6 +1,7 @@
 from flask import Flask, request, abort, render_template
 from flask_hashing import Hashing
 from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 from uuid import uuid4
 from forms import ZensusForm
 import requests.auth
@@ -9,15 +10,19 @@ import os
 
 
 app = Flask(__name__)
-hashing = Hashing(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['CACHE_TYPE'] = 'SimpleCache'
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+hashing = Hashing(app)
 db = SQLAlchemy(app)
+cache = Cache(app)
 
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     state = db.Column(db.String(60), nullable=False)
+    username_hash = db.Column(db.String(64), nullable=False)
     hash = db.Column(db.String(64), nullable=False)
     age = db.Column(db.DateTime, nullable=False)
     schuld = db.Column(db.String(60), nullable=False)
@@ -26,7 +31,6 @@ class Entry(db.Model):
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
-# REDIRECT_URI = 'http://127.0.0.1:5000/'
 
 
 def base_headers():
@@ -51,16 +55,20 @@ def make_authorization_url():
 # Left as an exercise to the reader.
 # You may want to store valid states in a database or memcache.
 def save_created_state(state):
-    pass
+    cache.set('state', state)
 
 
 def is_valid_state(state):
-    return True
+    valid = False
+    if state == cache.get("state"):
+        valid = True
+    return valid
 
 
 @app.route('/', methods=["GET", "POST"])
 def main():
     error = request.args.get('error', '')
+    form = ZensusForm()
     if error:
         return "Error: " + error
     if request.args.get('state', ''):
@@ -78,7 +86,9 @@ def main():
             return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.data
         # Note: In most cases, you'll want to store the access token, in, say,
         # a session for use in other parts of your web app.
-        return render_template('main.html', user=get_username(access_token), form=form)
+        return render_template('main.html', user=get_userdata(access_token)['name'], form=form)
+    if form.validate_on_submit():
+        return '<p>danke schön! Gut zu wissen, dass %s Schuld hat</p>' % form.schuld.data
     text = '<a href="%s">Authenticate with reddit</a>'
     return text % make_authorization_url()
 
@@ -97,13 +107,13 @@ def get_token(code):
     return token_json["access_token"]
 
 
-def get_username(access_token):
+def get_userdata(access_token):
     headers = base_headers()
     headers.update({"Authorization": "bearer " + access_token})
     response = requests.get("https://oauth.reddit.com/api/v1/me", headers=headers)
     me_json = response.json()
-    print(me_json)
-    return me_json['name']
+    ret = {'name': me_json['name'], 'created': me_json['created']}
+    return ret
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, render_template
+from flask import Flask, request, abort, render_template, session
 from flask_hashing import Hashing
 from flask_sqlalchemy import SQLAlchemy
 from flask_caching import Cache
@@ -26,11 +26,15 @@ cache = Cache(app)
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    state = db.Column(db.String(), nullable=False)
     name = db.Column(db.String(), default='')
     hash = db.Column(db.String(), nullable=False)
     created = db.Column(db.DateTime)
     schuld = db.Column(db.String(), default='')
+
+
+class State(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    state = db.Column(db.String(), nullable=False)
 
 
 with app.app_context():
@@ -60,12 +64,23 @@ def make_authorization_url():
 # Left as an exercise to the reader.
 # You may want to store valid states in a database or memcache.
 def save_created_state(state):
-    cache.set('state', state)
+    # cache.set('state', state)
+    with app.app_context():
+        db.session.add(State(state=state))
+        db.session.commit()
+
+
+def del_state(state):
+    # cache.set('state', state)
+    with app.app_context():
+        db.session.query(State).filter_by(state=state).delete()
+        db.session.commit()
 
 
 def is_valid_state(state):
     valid = False
-    if state == cache.get("state"):
+    # if state == cache.get("state"):
+    if db.session.query(State).filter_by(state=state).first():
         valid = True
     return valid
 
@@ -83,34 +98,33 @@ def main():
             abort(403)
         code = request.args.get('code')
         access_token = get_token(code)
-        user_agent = request.headers.get('User-Agent')
-        user_ip = request.remote_addr
+        session['access_token'] = access_token
         name = get_userdata(access_token)['name']
-        cache.set('name', name)
-        created = get_userdata(access_token)['created']
-        cache.set('created', created)
-        h = hashing.hash_value(hashing.hash_value(user_agent), hashing.hash_value(user_ip))
-        cache.set('h', h)
-        chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
-        chk_n = db.session.query(Entry).filter(Entry.name == name).first()
-        if not chk_h and not chk_n:
-            msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
-            return render_template('main.html', name=name, form=form, msg=msg)
-        msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
-        return render_template('main.html', msg=msg)
-    if form.validate_on_submit():
-        schuld = form.schuld.data
-        schuldtext = form.schuld.choices[int(form.schuld.data)][1]
-        with app.app_context():
-            db.session.add(Entry(state=cache.get('state'),
-                                 name=cache.get('name'),
-                                 hash=cache.get('h'),
-                                 created=datetime.datetime.fromtimestamp(cache.get('created')),
-                                 schuld=schuld))
-            db.session.query()
-            db.session.commit()
-        msg = '<p>danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
-        return render_template('main.html', msg=msg)
+        msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
+        return render_template('main.html', name=name, form=form, msg=msg)
+        # msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
+        # return render_template('main.html', msg=msg)
+    if session['access_token']:
+        if form.validate_on_submit():
+            schuld = form.schuld.data
+            schuldtext = form.schuld.choices[int(form.schuld.data)][1]
+            user_agent = request.headers.get('User-Agent')
+            user_ip = request.remote_addr
+            name = get_userdata(session['access_token'])['name']
+            created = get_userdata(session['access_token'])['created']
+            h = hashing.hash_value(hashing.hash_value(user_agent), hashing.hash_value(user_ip))
+            chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
+            chk_n = db.session.query(Entry).filter(Entry.name == name).first()
+            if not chk_h and not chk_n:
+                with app.app_context():
+                    db.session.add(Entry(name=hashing.hash_value(name),
+                                         hash=h,
+                                         created=datetime.datetime.fromtimestamp(created),
+                                         schuld=schuld))
+                    db.session.query()
+                    db.session.commit()
+            msg = '<p>Danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
+            return render_template('main.html', msg=msg)
     msg = '<a href="%s" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>' % make_authorization_url()
     return render_template('main.html', msg=msg)
 
@@ -134,6 +148,7 @@ def get_userdata(access_token):
     headers.update({"Authorization": "bearer " + access_token})
     response = requests.get("https://oauth.reddit.com/api/v1/me", headers=headers)
     me_json = response.json()
+    print(me_json)
     ret = {'name': me_json['name'], 'created': me_json['created']}
     return ret
 

@@ -1,7 +1,6 @@
 from flask import Flask, request, abort, render_template, session
 from flask_hashing import Hashing
 from flask_sqlalchemy import SQLAlchemy
-from flask_caching import Cache
 from uuid import uuid4
 from forms import ZensusForm
 import requests.auth
@@ -16,25 +15,21 @@ REDIRECT_URI = os.getenv('REDIRECT_URI')
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['CACHE_TYPE'] = os.getenv('CACHE_TYPE')
-app.config['CACHE_DEFAULT_TIMEOUT'] = int(os.getenv('CACHE_DEFAULT_TIMEOUT'))
-app.config['CACHE_DIR'] = os.getenv('CACHE_DIR')
 hashing = Hashing(app)
 db = SQLAlchemy(app)
-cache = Cache(app)
 
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    userid = db.Column(db.String(), default='')
+    userhash = db.Column(db.String(), default='')
     hash = db.Column(db.String(), nullable=False)
     created = db.Column(db.DateTime)
     schuld = db.Column(db.String(), default='')
 
 
 class State(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
     state = db.Column(db.String(), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
 
 with app.app_context():
@@ -99,31 +94,40 @@ def main():
         user_agent = request.headers.get('User-Agent')
         user_ip = request.remote_addr
         userdata = get_userdata(session['access_token'])
-        name = userdata['name']
         created = userdata['created']
         userid = userdata['userid']
-        h = hashing.hash_value(hashing.hash_value(user_agent), hashing.hash_value(user_ip))
-        chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
-        chk_n = db.session.query(Entry).filter(Entry.userid == userid).first()
-        if chk_h or chk_n:
+        name = userdata['name']
+        browser_hash = hash_prep(user_agent, user_ip)
+        user_hash = hash_prep(name, userid)
+        chk_browser_hash = db.session.query(Entry).filter(Entry.hash == browser_hash).first()
+        chk_user_hash = db.session.query(Entry).filter(Entry.userhash == user_hash).first()
+        if chk_browser_hash or chk_user_hash:
             msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
             return render_template('main.html', msg=msg)
         if form.validate_on_submit():
             schuld = form.schuld.data
             schuldtext = form.schuld.choices[int(form.schuld.data)-1][1]
-            if not chk_h and not chk_n:
+            if not chk_browser_hash and not chk_user_hash:
                 with app.app_context():
-                    db.session.add(Entry(userid=userid,
-                                         hash=h,
+                    db.session.add(Entry(userhash=user_hash,
+                                         hash=browser_hash,
                                          created=datetime.datetime.fromtimestamp(created),
                                          schuld=schuld))
                     db.session.query(State).filter_by(state=session['state']).delete()
+                    one_hour = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+                    db.session.query(State).filter(State.timestamp > one_hour).all().delete()
                     db.session.query()
                     db.session.commit()
             msg = '<p>Danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
             return render_template('main.html', msg=msg)
     msg = '<a href="%s" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>' % make_authorization_url()
     return render_template('main.html', msg=msg)
+
+
+def hash_prep(val_a, val_b):
+    val_a_hash = hashing.hash_value(val_a)
+    val_b_hash = hashing.hash_value(val_b)
+    return hashing.hash_value(val_a_hash, val_b_hash)
 
 
 def get_token(code):

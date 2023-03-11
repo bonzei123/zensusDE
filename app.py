@@ -110,10 +110,7 @@ def main():
             return render_template('main.html', msg=msg)
         if form.validate_on_submit():
             schuld = form.schuld.data
-            print(form.schuld.data)
-            print(form.schuld.choices)
-            print(form.schuld.choices[int(form.schuld.data)])
-            schuldtext = form.schuld.choices[int(form.schuld.data)][1]
+            schuldtext = form.schuld.choices[int(form.schuld.data)-1][1]
             if not chk_h and not chk_n:
                 with app.app_context():
                     db.session.add(Entry(userid=userid,

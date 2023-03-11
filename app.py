@@ -116,7 +116,7 @@ def main():
                                          schuld=schuld))
                     db.session.query(State).filter_by(state=session['state']).delete()
                     one_hour = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
-                    db.session.query(State).filter(State.timestamp > one_hour).all().delete()
+                    db.session.query(State).filter(State.timestamp > one_hour).delete()
                     db.session.query()
                     db.session.commit()
             msg = '<p>Danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'

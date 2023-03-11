@@ -104,7 +104,7 @@ def main():
         return render_template('main.html', name=name, form=form, msg=msg)
         # msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
         # return render_template('main.html', msg=msg)
-    if session['access_token']:
+    if 'access_token' in session:
         if form.validate_on_submit():
             schuld = form.schuld.data
             schuldtext = form.schuld.choices[int(form.schuld.data)][1]

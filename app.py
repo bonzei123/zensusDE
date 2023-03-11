@@ -125,6 +125,12 @@ def main():
     return render_template('main.html', msg=msg)
 
 
+@app.route('/test', methods=["GET", "POST"])
+def test():
+    msg = '<p>TEST LOLOLOL</p>'
+    return render_template('main.html', msg=msg)
+
+
 def hash_prep(val_a, val_b):
     val_a_hash = hashing.hash_value(val_a)
     val_b_hash = hashing.hash_value(val_b)

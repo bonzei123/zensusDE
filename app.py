@@ -26,7 +26,7 @@ cache = Cache(app)
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(), default='')
+    userid = db.Column(db.String(), default='')
     hash = db.Column(db.String(), nullable=False)
     created = db.Column(db.DateTime)
     schuld = db.Column(db.String(), default='')
@@ -47,8 +47,6 @@ def base_headers():
 
 
 def make_authorization_url():
-    # Generate a random string for the state parameter
-    # Save it for use later to prevent xsrf attacks
     state = str(uuid4())
     save_created_state(state)
     params = {"client_id": CLIENT_ID,
@@ -61,17 +59,13 @@ def make_authorization_url():
     return url
 
 
-# Left as an exercise to the reader.
-# You may want to store valid states in a database or memcache.
 def save_created_state(state):
-    # cache.set('state', state)
     with app.app_context():
         db.session.add(State(state=state))
         db.session.commit()
 
 
 def del_state(state):
-    # cache.set('state', state)
     with app.app_context():
         db.session.query(State).filter_by(state=state).delete()
         db.session.commit()
@@ -79,7 +73,6 @@ def del_state(state):
 
 def is_valid_state(state):
     valid = False
-    # if state == cache.get("state"):
     if db.session.query(State).filter_by(state=state).first():
         valid = True
     return valid
@@ -94,33 +87,40 @@ def main():
     if request.args.get('state', ''):
         state = request.args.get('state', '')
         if not is_valid_state(state):
-            # Uh-oh, this request wasn't started by us!
             abort(403)
         code = request.args.get('code')
         access_token = get_token(code)
         session['access_token'] = access_token
+        session['state'] = state
         name = get_userdata(access_token)['name']
         msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
         return render_template('main.html', name=name, form=form, msg=msg)
-        # msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
-        # return render_template('main.html', msg=msg)
     if 'access_token' in session:
+        user_agent = request.headers.get('User-Agent')
+        user_ip = request.remote_addr
+        userdata = get_userdata(session['access_token'])
+        name = userdata['name']
+        created = userdata['created']
+        userid = userdata['userid']
+        h = hashing.hash_value(hashing.hash_value(user_agent), hashing.hash_value(user_ip))
+        chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
+        chk_n = db.session.query(Entry).filter(Entry.userid == userid).first()
+        if chk_h or chk_n:
+            msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
+            return render_template('main.html', msg=msg)
         if form.validate_on_submit():
             schuld = form.schuld.data
+            print(form.schuld.data)
+            print(form.schuld.choices)
+            print(form.schuld.choices[int(form.schuld.data)])
             schuldtext = form.schuld.choices[int(form.schuld.data)][1]
-            user_agent = request.headers.get('User-Agent')
-            user_ip = request.remote_addr
-            name = get_userdata(session['access_token'])['name']
-            created = get_userdata(session['access_token'])['created']
-            h = hashing.hash_value(hashing.hash_value(user_agent), hashing.hash_value(user_ip))
-            chk_h = db.session.query(Entry).filter(Entry.hash == h).first()
-            chk_n = db.session.query(Entry).filter(Entry.name == name).first()
             if not chk_h and not chk_n:
                 with app.app_context():
-                    db.session.add(Entry(name=hashing.hash_value(name),
+                    db.session.add(Entry(userid=userid,
                                          hash=h,
                                          created=datetime.datetime.fromtimestamp(created),
                                          schuld=schuld))
+                    db.session.query(State).filter_by(state=session['state']).delete()
                     db.session.query()
                     db.session.commit()
             msg = '<p>Danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
@@ -148,8 +148,7 @@ def get_userdata(access_token):
     headers.update({"Authorization": "bearer " + access_token})
     response = requests.get("https://oauth.reddit.com/api/v1/me", headers=headers)
     me_json = response.json()
-    print(me_json)
-    ret = {'name': me_json['name'], 'created': me_json['created']}
+    ret = {'name': me_json['name'], 'created': me_json['created'], 'id': me_json['userid']}
     return ret
 
 

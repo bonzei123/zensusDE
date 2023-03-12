@@ -1,5 +1,10 @@
 from flask import render_template, Blueprint, session, request, abort
-from functions import is_valid_state, get_userdata, get_token, hash_prep, make_authorization_url, chk_admin
+from functions.is_valid_state import is_valid_state
+from functions.get_userdata import get_userdata
+from functions.get_token import get_token
+from functions.hash_prep import hash_prep
+from functions.make_authorization_url import make_authorization_url
+from functions.chk_admin import chk_admin
 from forms import ZensusForm
 from database.db import db
 from database import Entry, State

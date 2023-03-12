@@ -1,6 +1,6 @@
 from flask import Flask
 from blueprints.main import main_blueprint
-from database import db
+from database.db import db
 from config import hashing, GetConfig
 
 

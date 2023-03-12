@@ -1,7 +1,8 @@
 from flask import render_template, Blueprint, session, request, abort
 from functions import is_valid_state, get_userdata, get_token, hash_prep, make_authorization_url
 from forms import ZensusForm
-from database import db, Entry, State, Admin
+from database.db import db
+from database import Entry, State, Admin
 import datetime
 
 main_blueprint = Blueprint('main', __name__)

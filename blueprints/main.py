@@ -11,6 +11,7 @@ from database import Entry, State
 import datetime
 
 main_blueprint = Blueprint('main', __name__)
+adminpanel_blueprint = Blueprint('adminpanel', __name__)
 
 
 @main_blueprint.route('/', methods=["GET", "POST"])
@@ -66,3 +67,17 @@ def main():
             return render_template('main.html', msg=msg, admin=admin)
     msg = '<a href="%s" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>' % make_authorization_url()
     return render_template('main.html', msg=msg, admin=admin)
+
+
+@adminpanel_blueprint.route('/', methods=["GET", "POST"])
+def adminpanel():
+    if 'access_token' in session:
+        userdata = get_userdata(session['access_token'])
+        userid = userdata['userid']
+        name = userdata['name']
+        user_hash = hash_prep(name, userid)
+        admin = chk_admin(user_hash)
+        if admin:
+            msg = "Jo moin Mister Admin"
+            return render_template('admin.html', msg=msg)
+    abort(403)

@@ -1,6 +1,5 @@
 from flask_wtf import FlaskForm
 from wtforms import (SelectField, HiddenField)
-from wtforms.validators import InputRequired, Length
 
 
 class ZensusForm(FlaskForm):

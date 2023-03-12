@@ -1,4 +1,3 @@
-from flask_hashing import Hashing
 import os
 
 
@@ -10,6 +9,3 @@ REDIRECT_URI = os.getenv('REDIRECT_URI')
 class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')
     SECRET_KEY = os.getenv('SECRET_KEY')
-
-
-hashing = Hashing()

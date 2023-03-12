@@ -28,9 +28,11 @@ def main():
         access_token = get_token(code)
         session['access_token'] = access_token
         session['state'] = state
-        name = get_userdata(access_token)['name']
+        userdata = get_userdata(session['access_token'])
+        userid = userdata['userid']
+        name = userdata['name']
         msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
-        admin = chk_admin()
+        admin = chk_admin(hash_prep(name, userid))
         return render_template('main.html', name=name, form=form, msg=msg, admin=admin)
     if 'access_token' in session:
         user_agent = request.headers.get('User-Agent')
@@ -43,7 +45,7 @@ def main():
         user_hash = hash_prep(name, userid)
         chk_browser_hash = db.session.query(Entry).filter(Entry.hash == browser_hash).first()
         chk_user_hash = db.session.query(Entry).filter(Entry.userhash == user_hash).first()
-        admin = chk_admin()
+        admin = chk_admin(user_hash)
         if chk_browser_hash or chk_user_hash:
             msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
             return render_template('main.html', msg=msg, admin=admin)

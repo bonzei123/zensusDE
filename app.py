@@ -2,10 +2,12 @@ from flask import Flask
 from blueprints.main import main_blueprint
 from database.db import db
 from config.hashing import hashing
+from config.config import GetConfig
 
 
 app = Flask(__name__)
 app.register_blueprint(main_blueprint)
+app.config.from_object(GetConfig())
 db.init_app(app)
 hashing.init_app(app)
 

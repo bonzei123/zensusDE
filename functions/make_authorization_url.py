@@ -1,6 +1,6 @@
 from uuid import uuid4
 from functions.save_created_state import save_created_state
-from config.config import CLIENT_ID, REDIRECT_URI
+from config.env import CLIENT_ID, REDIRECT_URI
 import urllib.parse
 
 

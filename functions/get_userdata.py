@@ -1,4 +1,4 @@
-from functions.base_headers import base_headers
+from functions import base_headers
 import requests.auth
 
 

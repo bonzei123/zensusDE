@@ -1,8 +1,7 @@
 from flask import Flask
 from blueprints.main import main_blueprint
-from database.db import db
-from config.hashing import hashing
-from config.config import GetConfig
+from database import db
+from config import hashing, GetConfig
 
 
 app = Flask(__name__)

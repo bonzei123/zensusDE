@@ -1,5 +1,4 @@
-from database.db import db
-from database.state import State
+from database import db, State
 
 
 def is_valid_state(state):

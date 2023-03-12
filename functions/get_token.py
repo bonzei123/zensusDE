@@ -1,5 +1,5 @@
-from functions.base_headers import base_headers
-from config.env import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
+from functions import base_headers
+from config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
 import requests.auth
 
 

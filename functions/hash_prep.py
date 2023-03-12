@@ -1,4 +1,4 @@
-from config.hashing import hashing
+from config import hashing
 
 
 def hash_prep(val_a, val_b):

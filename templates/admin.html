@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="card-body p-5 bg-white rounded">
+        <div class="table-responsive overflow-visible">
+            {% if name is defined %}
+                <p>Hallo u/{{ name }}</p>
+            {% else %}
+                <p>Hallo du!</p>
+            {% endif %}
+            {% if msg is defined %}
+                {{ msg|safe }}
+            {% endif %}
+            {% if admin %}
+                <p>Adminpanel</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}

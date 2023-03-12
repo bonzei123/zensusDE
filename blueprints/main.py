@@ -1,8 +1,8 @@
 from flask import render_template, Blueprint, session, request, abort
-from functions import is_valid_state, get_userdata, get_token, hash_prep, make_authorization_url
+from functions import is_valid_state, get_userdata, get_token, hash_prep, make_authorization_url, chk_admin
 from forms import ZensusForm
 from database.db import db
-from database import Entry, State, Admin
+from database import Entry, State
 import datetime
 
 main_blueprint = Blueprint('main', __name__)
@@ -25,6 +25,7 @@ def main():
         session['state'] = state
         name = get_userdata(access_token)['name']
         msg = '<p>Sooo, dann mal viel Spaß beim Ausfüllen!</p>'
+        admin = chk_admin()
         return render_template('main.html', name=name, form=form, msg=msg, admin=admin)
     if 'access_token' in session:
         user_agent = request.headers.get('User-Agent')
@@ -35,9 +36,9 @@ def main():
         name = userdata['name']
         browser_hash = hash_prep(user_agent, user_ip)
         user_hash = hash_prep(name, userid)
-        chk_admin = db.session.query(Admin).filter(Entry.hash == browser_hash).first()
         chk_browser_hash = db.session.query(Entry).filter(Entry.hash == browser_hash).first()
         chk_user_hash = db.session.query(Entry).filter(Entry.userhash == user_hash).first()
+        admin = chk_admin()
         if chk_browser_hash or chk_user_hash:
             msg = '<p>Sorrüüüü, du hast leider irgendwie schon dran teilgenommen... 👉👈</p>'
             return render_template('main.html', msg=msg, admin=admin)

@@ -1,10 +1,10 @@
 from flask import Flask
-from blueprints.main import main
+from blueprints.main import main_blueprint
 from database.db import db
 
 
 app = Flask(__name__)
-app.register_blueprint(main)
+app.register_blueprint(main_blueprint)
 
 
 with app.app_context():

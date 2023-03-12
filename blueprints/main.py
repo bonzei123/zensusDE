@@ -5,10 +5,10 @@ from database import Entry, State
 from database.db import db
 import datetime
 
-main = Blueprint('main', __name__)
+main_blueprint = Blueprint('main', __name__)
 
 
-@main.route('/', methods=["GET", "POST"])
+@main_blueprint.route('/', methods=["GET", "POST"])
 def main():
     error = request.args.get('error', '')
     form = ZensusForm()

@@ -1,28 +1,45 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="card text-center">
-        <div class="card-header">
-            Frage Nr.1
-        </div>
-        <div class="card-body">
-            <form class="form" method="POST" action="/">
-                {{ form.csrf_token }}
-                <h5 class="card-title">
-                    {% if name is defined %}
-                        Hallo u/{{ name }}
-                    {% else %}
-                        Hallo du!
-                    {% endif %}
-                </h5>
-                <p class="card-text">{{ form.schuld.label }}</p>
-                <p>{{ form.schuld(class="form-control") }}</p>
-                <a type="submit" class="btn btn-primary">Go somewhere</a>
-            </form>
-        </div>
-        {% if admin %}
-            <div class="card-footer text-muted">
-                <a href="{{ url_for('admin') }}" class="btn btn-sm btn-info">Admin</a>
+    {% if form is defined %}
+        <div class="card text-center">
+            <div class="card-header">
+                Frage Nr.1
             </div>
-        {% endif %}
-    </div>
+            <div class="card-body">
+                <form class="form" method="POST" action="/">
+                    {{ form.csrf_token }}
+                    <h5 class="card-title">
+                        {% if name is defined %}
+                            Hallo u/{{ name }}
+                        {% else %}
+                            Hallo du!
+                        {% endif %}
+                    </h5>
+                    <p class="card-text">{{ form.schuld.label }}</p>
+                    <p>{{ form.schuld(class="form-control") }}</p>
+                    <a type="submit" class="btn btn-primary">Go somewhere</a>
+                </form>
+            </div>
+            {% if admin %}
+                <div class="card-footer text-muted">
+                    <a href="{{ url_for('admin') }}" class="btn btn-sm btn-info">Admin</a>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card border-info mb-3" style="max-width: 18rem;">
+            <div class="card-header">
+                {% if name is defined %}
+                    Hallo u/{{ name }}
+                {% else %}
+                    Hallo du!
+                {% endif %}
+            </div>
+            <div class="card-body text-info">
+                <h5 class="card-title">Authentifizierung</h5>
+                <p class="card-text">{{ msg }}</p>
+            </div>
+        </div>
+    {% endif %}
+    <div class="card text-center">
 {% endblock content %}

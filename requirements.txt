@@ -7,4 +7,3 @@ requests
 psycopg2-binary
 Flask-WTF
 wtforms
-flask-caching

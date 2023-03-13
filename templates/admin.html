@@ -10,21 +10,9 @@
             {% if msg is defined %}
                 {{ msg|safe }}
             {% endif %}
-            {% if form is defined %}
-                <form class="form" method="POST" action="/">
-                    {{ form.csrf_token }}
-                    <p>
-                        {{ form.schuld.label }}
-                        {{ form.schuld }}
-                    </p>
-                    <p>
-                        <input type="submit" class="btn btn-primary">
-                    </p>
-                </form>
+            {% if admin %}
+                <p>Adminpanel</p>
             {% endif %}
         </div>
     </div>
-    {% if admin %}
-    ADMIN
-    {% endif %}
 {% endblock content %}

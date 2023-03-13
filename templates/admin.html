@@ -1,18 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="card-body p-5 bg-white rounded">
-        <div class="table-responsive overflow-visible">
-            {% if name is defined %}
-                <p>Hallo u/{{ name }}</p>
-            {% else %}
-                <p>Hallo du!</p>
-            {% endif %}
-            {% if msg is defined %}
-                {{ msg|safe }}
-            {% endif %}
-            {% if admin %}
-                <p>Adminpanel</p>
-            {% endif %}
+    <div class="card text-center">
+        <div class="card-header">
+            Featured
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">
+                {% if name is defined %}
+                    <p>Hallo u/{{ name }}</p>
+                {% else %}
+                    <p>Hallo du!</p>
+                {% endif %}
+            </h5>
+            <p class="card-text">
+                {% if msg is defined %}
+                    {{ msg|safe }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="card-footer text-muted">
+            <a href="{{ url_for('admin') }}" class="btn btn-sm btn-info">Admin</a>
         </div>
     </div>
 {% endblock content %}

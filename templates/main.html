@@ -1,30 +1,28 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="card-body p-5 bg-white rounded">
-        <div class="table-responsive overflow-visible">
-            {% if name is defined %}
-                <p>Hallo u/{{ name }}</p>
-            {% else %}
-                <p>Hallo du!</p>
-            {% endif %}
-            {% if msg is defined %}
-                {{ msg|safe }}
-            {% endif %}
-            {% if form is defined %}
-                <form class="form" method="POST" action="/">
-                    {{ form.csrf_token }}
-                    <p>
-                        {{ form.schuld.label }}
-                        {{ form.schuld }}
-                    </p>
-                    <p>
-                        <input type="submit" class="btn btn-primary">
-                    </p>
-                </form>
-            {% endif %}
+    <div class="card text-center">
+        <div class="card-header">
+            Frage Nr.1
         </div>
+        <div class="card-body">
+            <form class="form" method="POST" action="/">
+                {{ form.csrf_token }}
+                <h5 class="card-title">
+                    {% if name is defined %}
+                        Hallo u/{{ name }}
+                    {% else %}
+                        Hallo du!
+                    {% endif %}
+                </h5>
+                <p class="card-text">{{ form.schuld.label }}</p>
+                <p>{{ form.schuld(class="form-control") }}</p>
+                <a type="submit" class="btn btn-primary">Go somewhere</a>
+            </form>
+        </div>
+        {% if admin %}
+            <div class="card-footer text-muted">
+                <a href="{{ url_for('admin') }}" class="btn btn-sm btn-info">Admin</a>
+            </div>
+        {% endif %}
     </div>
-    {% if admin %}
-    ADMIN
-    {% endif %}
 {% endblock content %}

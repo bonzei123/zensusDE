@@ -17,7 +17,7 @@
                     </h5>
                     <p class="card-text">{{ form.schuld.label }}</p>
                     <p>{{ form.schuld(class="form-control") }}</p>
-                    <a type="submit" class="btn btn-primary">Go somewhere</a>
+                    <a type="submit" class="btn btn-primary">Abschicken</a>
                 </form>
             </div>
             {% if admin %}
@@ -37,7 +37,7 @@
             </div>
             <div class="card-body text-info">
                 <h5 class="card-title">Authentifizierung</h5>
-                <p class="card-text">{{ msg }}</p>
+                <p class="card-text">{{ msg|safe }}</p>
             </div>
         </div>
     {% endif %}

@@ -38,7 +38,13 @@ def main():
     if 'access_token' in session:
         user_agent = request.headers.get('User-Agent')
         user_ip = request.remote_addr
-        userdata = get_userdata(session['access_token'])
+        try:
+            userdata = get_userdata(session['access_token'])
+        except:
+            session.clear()
+            msg = "<p>Huppsiwuppsi, deine Sitzung oder der Sicherheitstoken von Reddit ist abgelaufen.</p>" \
+                  "<p>Bitte authentifiziere dich nochmal!</p>"
+            return render_template('main.html', msg=msg, admin=admin)
         created = userdata['created']
         userid = userdata['userid']
         name = userdata['name']
@@ -64,6 +70,7 @@ def main():
                 db.session.query()
                 db.session.commit()
             msg = '<p>Danke schön! Gut zu wissen, dass ' + schuldtext + ' Schuld hat.</p>'
+            session.clear()
             return render_template('main.html', msg=msg, admin=admin)
     msg = '<a href="%s" class="btn btn-danger">Authentifiziere dich mit Reddit!</a>' % make_authorization_url()
     return render_template('main.html', msg=msg, admin=admin)
